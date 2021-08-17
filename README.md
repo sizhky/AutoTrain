@@ -20,5 +20,6 @@ $ ./setup.sh
 $ python auto_train/setup_images.py config.ini ~/Downloads/project-label-studio-dump.csv
 
 # 4. train in timm
+# ... Incomplete ...
 $ python timm/train.py -c config.ini
 ```
