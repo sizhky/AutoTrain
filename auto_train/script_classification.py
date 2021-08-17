@@ -35,7 +35,7 @@ def get_transformed_image(url):
     is_local_file = url.startswith('/data')
     if is_local_file:
         # filepath = url.replace('/data', f'/Users/yreddy31/Library/Application Support/label-studio/media')
-        filepath = url.replace('/data', settings.label_studio.base_data_dir)
+        filepath = url.replace('/data', settings.label_studio.base_data_dir+'/media/')
         with open(filepath, mode='rb') as f:
             image = Image.open(f).convert('RGB')
     else:
@@ -82,7 +82,7 @@ class ImageClassifier(object):
             print('Transfer learning with a full ConvNet finetuning')
 
         num_ftrs = self.model.classifier.in_features
-        self.model.classifier = nn.Linear(num_ftrs, num_classes)
+        self.model.classifier = settings.architecture.head
         self.model = self.model.to(device)
 
         self.criterion = nn.CrossEntropyLoss()
@@ -94,6 +94,7 @@ class ImageClassifier(object):
         self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=7, gamma=0.1)
 
     def save(self, path):
+        print(f'Save model to {path}...')
         torch.save(self.model.state_dict(), path)
 
     def load(self, path):
@@ -206,7 +207,7 @@ class ImageClassifierAPI(LabelStudioMLBase):
         self.model.train(dataloader, num_epochs=num_epochs)
 
         model_path = os.path.join(workdir, 'model.pt')
-        print(f'Save model to {model_path}...')
         self.model.save(model_path)
+        self.model.save(settings.online_training.save_dir)
 
         return {'model_path': model_path, 'classes': dataset.classes}
