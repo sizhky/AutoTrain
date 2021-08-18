@@ -10,8 +10,8 @@ import typer
 app = typer.Typer()
 
 @app.command()
-def setup_training_data_for_labeling(config_path, label_studio_dump):
-    config = AttrDict(Config().from_disk(config_path))
+def setup_training_data_for_labeling(label_studio_dump):
+    config = AttrDict(Config().from_disk('config.ini'))
     df = pd.read_csv(label_studio_dump)
     np.random.seed(42)
     df['split'] = np.random.choice(

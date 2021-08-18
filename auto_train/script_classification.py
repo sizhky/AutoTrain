@@ -82,7 +82,11 @@ class ImageClassifier(object):
             print('Transfer learning with a full ConvNet finetuning')
 
         num_ftrs = self.model.classifier.in_features
-        self.model.classifier = settings.architecture.head
+        # self.model.classifier = settings.architecture.head
+        self.model.classifier = nn.Linear(
+            settings.architecture.backbone.vector_size,
+            num_classes
+        )
         self.model = self.model.to(device)
 
         self.criterion = nn.CrossEntropyLoss()

@@ -19,8 +19,9 @@ $ ./setup.sh
 # 3. below command will copy images into the right folder structure for training
 $ python auto_train/setup_images.py config.ini ~/Downloads/project-label-studio-dump.csv
 
-# ..............INCOMPLETE................ #
 # 4. train in timm
-$ python timm/train.py -c config.ini
-# ........................................ #
+$ python timm/train.py -c config.ini PROJECT/data/train
+
+# 5. predict
+$ python auto_train/infer_classification.py path/to/folder/of/images
 ```
