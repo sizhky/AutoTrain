@@ -6,7 +6,7 @@ import typer
 app = typer.Typer()
 
 bash_file = '''
-git clone https://github.com/sizhky/pytorch-image-models timm
+git clone https://github.com/rwightman/pytorch-image-models timm
 export BASE_DATA_DIR=BASE_DATA_DIRECTORY
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=True
 
