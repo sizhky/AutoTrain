@@ -14,7 +14,6 @@ from auto_train_classification.custom_functions import *
 
 settings = AttrDict(Config().from_disk('config.ini'))
 settings = AttrDict(registry.resolve(settings))
-
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 image_size = settings.architecture.image_size

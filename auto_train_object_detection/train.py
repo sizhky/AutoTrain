@@ -1,13 +1,15 @@
 from icevision.all import *
 from auto_train_object_detection.custom_functions import *
 from torch_snippets.registry import Config, registry, AttrDict
+from torch_snippets import Glob, parent
 
 config = Config().from_disk('config.ini')
 config = AttrDict(registry.resolve(config))
 data_dir = Path(config.training.dir)
 
-images_dir = data_dir / 'images'
-annotations_dir = data_dir / 'Annotations'
+images_dir = config.training.images_dir
+annotations_dir = config.training.annotations_dir
+print(f'{len(Glob(images_dir))} images found')
 class_map = ClassMap(config.project.classes)
 parser = parsers.voc(annotations_dir=annotations_dir, images_dir=images_dir, class_map=class_map)
 data_splitter = RandomSplitter((config.training.train_ratio, 1 - config.training.train_ratio))
@@ -24,26 +26,36 @@ valid_ds = Dataset(valid_records, valid_tfms)
 
 
 # model_type = models.torchvision.retinanet
+extra_args = config.architecture.extra_args
 assert config.architecture.model_type.count('.', 1), "Architecture should look like <base>.<model>"
 a, b = config.architecture.model_type.split('.')
 model_type = getattr(getattr(models, a), b)
 backbone = getattr(model_type.backbones, config.architecture.backbone)(config.architecture.pretrained)
 # backbone = model_type.backbones.resnet50_fpn(pretrained=True)
-model = model_type.model(backbone=backbone(pretrained=True), num_classes=len(parser.class_map))
-
-print(model)
+model = model_type.model(
+    backbone=backbone(pretrained=True), 
+    num_classes=len(parser.class_map),
+    **extra_args
+)
 
 train_dl = model_type.train_dl(train_ds, batch_size=4, num_workers=4, shuffle=True)
 valid_dl = model_type.valid_dl(valid_ds, batch_size=4, num_workers=4, shuffle=False)
-model_type.show_batch(first(valid_dl), ncols=4)
+# model_type.show_batch(first(valid_dl), ncols=4)
 
 
 metrics = [COCOMetric(metric_type=COCOMetricType.bbox)]
 learn = model_type.fastai.learner(dls=[train_dl, valid_dl], model=model, metrics=metrics)
-learn.lr_find()
+# learn.lr_find()
 
-learn.fine_tune(30, 1e-4, freeze_epochs=3)
+training_scheme = config.training.scheme
+
+with learn.no_bar():
+    learn.fine_tune(
+        training_scheme.epochs, 
+        training_scheme.lr, 
+        freeze_epochs=training_scheme.freeze_epochs
+    )
 
 from torch_snippets import load_torch_model_weights_to, save_torch_model_weights_from, makedir
-makedir('models')
-save_torch_model_weights_from(model, 'models/0.pth')
+makedir(parent(training_scheme.output_path))
+save_torch_model_weights_from(model, training_scheme.output_path)

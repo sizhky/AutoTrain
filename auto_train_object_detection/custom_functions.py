@@ -5,11 +5,17 @@ if not hasattr(registry, 'augmentations'):
     registry.create('augmentations')
 
 @registry.augmentations.register("get_train_transforms")
-def get_train_transforms():
-    train_tfms = tfms.A.Adapter([tfms.A.Normalize()])
+def get_train_transforms(size, presize):
+    train_tfms = tfms.A.Adapter([
+        *tfms.A.aug_tfms(size=size, presize=presize),
+        tfms.A.Normalize()
+    ])
     return train_tfms
 
 @registry.augmentations.register("get_val_transforms")
-def get_val_transforms():
-    valid_tfms = tfms.A.Adapter([tfms.A.Normalize()])
+def get_val_transforms(size, presize):
+    valid_tfms = tfms.A.Adapter([
+        *tfms.A.aug_tfms(size=size, presize=presize),
+        tfms.A.Normalize()
+    ])
     return valid_tfms
