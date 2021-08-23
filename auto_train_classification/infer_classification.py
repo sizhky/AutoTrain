@@ -10,7 +10,7 @@ import sys; sys.path.append(str(parent(parent(__file__)).resolve()))
 
 from torch_snippets import *
 from torch_snippets.registry import *
-from auto_train.custom_functions import *
+from auto_train_classification.custom_functions import *
 
 settings = AttrDict(Config().from_disk('config.ini'))
 settings = AttrDict(registry.resolve(settings))
