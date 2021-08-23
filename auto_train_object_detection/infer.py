@@ -1,22 +1,24 @@
 from torch_snippets import *
 from icevision.all import *
+from auto_train_object_detection.custom_functions import *
+from torch_snippets.registry import registry, Config, AttrDict
 
-image_size = 384
-class_map = flatten([[f'{i}_ticked', f'{i}_not_ticked'] for i in range(1, 22)])
-class_map = ClassMap(class_map)
+config = Config().from_disk('config.ini')
+config = AttrDict(registry.resolve(config))
 
-extra_args = {}
-model_type = models.ultralytics.yolov5
-backbone = model_type.backbones.small
-# The yolov5 model requires an img_size parameter  
-# The efficientdet model requires an img_size parameter
-extra_args['img_size'] = image_size
-model = model_type.model(backbone=backbone(pretrained=True), num_classes=len(class_map), **extra_args) 
+image_size = config.architecture.size
+class_map = ClassMap(config.project.classes)
 
+assert config.architecture.model_type.count('.', 1), "Architecture should look like <base>.<model>"
+extra_args = config.architecture.extra_args
+a, b = config.architecture.model_type.split('.')
+model_type = getattr(getattr(models, a), b)
+backbone = getattr(model_type.backbones, config.architecture.backbone)(config.architecture.pretrained)
+model = model_type.model(backbone=backbone(pretrained=True), num_classes=len(class_map), **extra_args)
 
 from torch_snippets import load_torch_model_weights_to, save_torch_model_weights_from, makedir
-yolo_path = P.home() / 'Downloads/YOLO.pth'
-load_torch_model_weights_to(model, yolo_path)
+yolo_path = config.training.scheme.output
+load_torch_model_weights_to(model, yolo_path, device='cpu')
 
 
 from collections import namedtuple
@@ -46,9 +48,16 @@ def predict_on_folder_of_images(folder):
     output = lzip(fpaths, preds)
     return output
 
-folder = P.home()/'Desktop/dental-test'
-for fpath, pred in predict_on_folder_of_images(folder):
-    try:
-        show(read(fpath, 1), bbs=pred.bbs, texts=pred.labels)
-    except:
-        ...
+import typer
+app = typer.Typer()
+
+@app.command()
+def show_predictions_on_folder_of_images(folder):
+    for fpath, pred in predict_on_folder_of_images(folder):
+        try:
+            show(read(fpath, 1), bbs=pred.bbs, texts=pred.labels)
+        except Exception as e:
+            logger.warning(f'Failed to show prediction on {fpath}\nError {e}')
+
+if __name__ == '__main__':
+    app()

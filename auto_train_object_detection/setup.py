@@ -6,7 +6,6 @@ import typer
 app = typer.Typer()
 
 bash_file = '''
-git clone https://github.com/sizhky/pytorch-image-models timm
 export BASE_DATA_DIR=BASE_DATA_DIRECTORY
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=True
 
@@ -14,9 +13,6 @@ trap cleanup INT
 cleanup() {
     echo "Killing label studio"
     kill "$label_studio_pid"
-    echo "Killing label studio ml"
-    kill "$label_studio_ml_pid"
-    python auto_train/config_to_timm.py
 }
 
 mkdir -p MODEL_DIRECTORY
@@ -25,10 +21,6 @@ echo $PYTHONPATH
 label-studio &
 label_studio_pid=$!
 echo "Label Studio lauched @ $label_studio_pid"
-label-studio-ml init APP_NAME --script SCRIPT_PATH
-label-studio-ml start ./APP_NAME
-label_studio_ml_pid=$!
-echo "Label Studio ML lauched @ $label_studio_ml_pid"
 
 wait
 '''

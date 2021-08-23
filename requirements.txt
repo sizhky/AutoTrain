@@ -1,4 +1,5 @@
 torch_snippets
-timm
+torch
 label-studio
 label-studio-ml
+rich

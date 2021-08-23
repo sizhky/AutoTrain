@@ -9,7 +9,6 @@ data_dir = Path(config.training.dir)
 images_dir = data_dir / 'images'
 annotations_dir = data_dir / 'Annotations'
 class_map = ClassMap(config.project.classes)
-print(class_map)
 parser = parsers.voc(annotations_dir=annotations_dir, images_dir=images_dir, class_map=class_map)
 data_splitter = RandomSplitter((config.training.train_ratio, 1 - config.training.train_ratio))
 train_records, valid_records = parser.parse(data_splitter)
