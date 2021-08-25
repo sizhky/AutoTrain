@@ -20,6 +20,7 @@ def incby1(d):
             incby1(v)
 
 x = read_json(config.training.annotations_file)
+# ids start from 0, but it's better to number them from 1
 incby1(x)
 write_json(x, '/tmp/intermediate-file.json')
 

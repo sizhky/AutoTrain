@@ -31,7 +31,7 @@ def predict_on_folder_of_images(folder):
     fpaths = []
     for extn in image_extns:
         fpaths += P(folder).Glob(f'*.{extn}')
-    imgs = [read(f, 1) for f in fpaths][:2]
+    imgs = [read(f, 1) for f in fpaths]
     logger.info(f'Found {len(imgs)} images')
     infer_ds = Dataset.from_images(imgs, infer_tfms, class_map=class_map)
 
@@ -58,9 +58,10 @@ app = typer.Typer()
 
 @app.command()
 def show_predictions_on_folder_of_images(folder):
+    makedir('/content/outputs/')
     for fpath, pred in predict_on_folder_of_images(folder):
         try:
-            show(read(fpath, 1), bbs=pred.bbs, texts=pred.labels, fpath=f'/content/outputs/{fpath}')
+            show(read(fpath, 1), bbs=pred.bbs, texts=pred.labels, save_path=f'/content/outputs/{fname(fpath)}')
         except Exception as e:
             logger.warning(f'Failed to show prediction on {fpath}\nError {e}')
 
