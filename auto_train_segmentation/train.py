@@ -78,7 +78,7 @@ def find_best_learning_rate():
     ax.set_xscale('log')
     fig.savefig(f'{config.project.location}/find_lr_plot.png')
     logger.info(f'LR Plot is saved at {config.project.location}/find_lr_plot.png')
-    logger.info(f'Suggested LRs: {suggested_lrs.lr_min/10} and {suggested_lrs.lr_steep}')
+    logger.info(f'Suggested LRs: {suggested_lrs.lr_min} and {suggested_lrs.lr_steep}')
     
 @app.command()
 def train_model(lr:float=None):

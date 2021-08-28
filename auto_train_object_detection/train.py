@@ -1,18 +1,20 @@
 from icevision.all import *
+from torch_snippets import Glob, parent, sys, P
+sys.path.append(str(P().resolve()))
 from auto_train_object_detection.custom_functions import *
 from torch_snippets.registry import Config, registry, AttrDict
-from torch_snippets import Glob, parent
 
 config = Config().from_disk('config.ini')
 config = AttrDict(registry.resolve(config))
 data_dir = Path(config.training.dir)
 
 images_dir = config.training.images_dir
-annotations_dir = config.training.annotations_dir
+annotations_file = config.training.annotations_file
 print(f'{len(Glob(images_dir))} images found')
 class_map = ClassMap(config.project.classes)
-parser = parsers.voc(annotations_dir=annotations_dir, images_dir=images_dir, class_map=class_map)
+parser = parsers.coco(annotations_file=annotations_file, img_dir=images_dir)
 data_splitter = RandomSplitter((config.training.train_ratio, 1 - config.training.train_ratio))
+logger.info(f'\nCLASSES INFERRED FROM {config.training.annotations_file}: {parser.class_map}')
 train_records, valid_records = parser.parse(data_splitter)
 
 presize = config.architecture.presize
@@ -46,16 +48,45 @@ valid_dl = model_type.valid_dl(valid_ds, batch_size=4, num_workers=4, shuffle=Fa
 metrics = [COCOMetric(metric_type=COCOMetricType.bbox)]
 learn = model_type.fastai.learner(dls=[train_dl, valid_dl], model=model, metrics=metrics)
 # learn.lr_find()
+import typer
+app = typer.Typer()
 
-training_scheme = config.training.scheme
+@app.command()
+def find_best_learning_rate():
+    suggested_lrs = learn.lr_find(show_plot=False)
+    recorder = learn.recorder
+    skip_end = 5
+    lrs    = recorder.lrs    if skip_end==0 else recorder.lrs   [:-skip_end]
+    losses = recorder.losses if skip_end==0 else recorder.losses[:-skip_end]
+    fig, ax = plt.subplots(1,1)
+    ax.plot(lrs, losses)
+    ax.set_ylabel("Loss")
+    ax.set_xlabel("Learning Rate")
+    ax.set_xscale('log')
+    fig.savefig(f'{config.project.location}/find_lr_plot.png')
+    logger.info(f'LR Plot is saved at {config.project.location}/find_lr_plot.png')
+    logger.info(f'Suggested LRs: {suggested_lrs.lr_min} and {suggested_lrs.lr_steep}')
+    
+@app.command()
+def train_model(lr:float=None):
+    from torch_snippets import load_torch_model_weights_to, save_torch_model_weights_from, makedir
+    try:
+        load_torch_model_weights_to(model, config.training.scheme.resume_training_from)
+    except:
+        logger.info('Training from scratch!')
+        
+    training_scheme = config.training.scheme
 
-with learn.no_bar():
-    learn.fine_tune(
-        training_scheme.epochs, 
-        training_scheme.lr, 
-        freeze_epochs=training_scheme.freeze_epochs
-    )
+    lr = lr if lr is not None else training_scheme.lr
+    with learn.no_bar():
+        learn.fine_tune(
+            training_scheme.epochs, 
+            lr, 
+            freeze_epochs=training_scheme.freeze_epochs
+        )
 
-from torch_snippets import load_torch_model_weights_to, save_torch_model_weights_from, makedir
-makedir(parent(training_scheme.output_path))
-save_torch_model_weights_from(model, training_scheme.output_path)
+    makedir(parent(training_scheme.output_path))
+    save_torch_model_weights_from(model, training_scheme.output_path)
+    
+if __name__ == '__main__':
+    app()
