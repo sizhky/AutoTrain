@@ -1,1 +1,1 @@
-Refer to nbs/segmentation.ipynb
+Refer to [nbs/segmentation.ipynb](../nbs/segmentation.ipynb)
