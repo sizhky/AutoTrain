@@ -18,9 +18,9 @@ from torchvision import models, transforms
 from label_studio_ml.model import LabelStudioMLBase
 from label_studio_ml.utils import get_single_tag_keys, get_choice, is_skipped
 from torch_snippets.registry import *
-from auto_train import custom_functions
+from auto_train_classification import custom_functions
 
-settings = Config().from_disk('config.ini')
+settings = Config().from_disk(os.environ['CONFIG'])
 settings = AttrDict(registry.resolve(settings))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

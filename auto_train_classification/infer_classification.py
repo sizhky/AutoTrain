@@ -12,7 +12,7 @@ from torch_snippets import *
 from torch_snippets.registry import *
 from auto_train_classification.custom_functions import *
 
-settings = AttrDict(Config().from_disk('config.ini'))
+settings = AttrDict(Config().from_disk(os.environ['CONFIG']))
 settings = AttrDict(registry.resolve(settings))
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -55,10 +55,12 @@ class ImageClassifier(object):
             preds = self.model(images).cpu().data
             preds = torch.nn.functional.softmax(preds,-1)
         confs, classes = preds.max(-1)
-        preds = pd.DataFrame(
-            {'confidence': confs, 'prediction': classes}, 
-        )
-        display(preds)
+        preds = pd.DataFrame({
+            'confidence': confs, 
+            'prediction': classes,
+            'path': image_paths,
+            'image_id': [fname(f) for f in image_paths]
+        })
         return preds
 
 import typer

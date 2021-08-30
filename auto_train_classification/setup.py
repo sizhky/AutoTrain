@@ -16,7 +16,7 @@ cleanup() {
     kill "$label_studio_pid"
     echo "Killing label studio ml"
     kill "$label_studio_ml_pid"
-    python auto_train/config_to_timm.py
+    python auto_train_classification/config_to_timm.py
 }
 
 mkdir -p MODEL_DIRECTORY
@@ -34,7 +34,7 @@ wait
 '''
 
 @app.command()
-def main(config_path='config.ini'):
+def main(config_path=os.environ['CONFIG']):
     config = Config().from_disk(config_path)
     config = AttrDict(config)
     file = (bash_file
@@ -44,13 +44,13 @@ def main(config_path='config.ini'):
         .replace('MODEL_DIRECTORY', config.project.model_directory)
     )
     file = [l for l in file.splitlines() if l.strip()!='']
-    writelines(file, 'setup.sh')
+    writelines(file, 'auto_train_classification/setup.sh')
     import rich
     from rich.panel import Panel
     info = '''Setup Done!
     Run
-    $ [green]chmod +x setup.py[/green]
-    $ [green]./setup.sh[/green]
+    $ [green]chmod +x auto_train_classification/setup.sh[/green]
+    $ [green]./auto_train_classification/setup.sh[/green]
     in termial to start label studio labelling
     '''
     info = '\n'.join([l.strip() for l in info.splitlines()])

@@ -5,7 +5,7 @@ from auto_train_segmentation.custom_functions import *
 from torch_snippets.markup import read_json, write_json
 from torch_snippets.registry import Config, registry, AttrDict
 
-config = Config().from_disk('config.ini')
+config = Config().from_disk(os.environ['CONFIG'])
 config = AttrDict(registry.resolve(config))
 
 from torch_snippets import *

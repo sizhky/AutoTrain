@@ -1,7 +1,8 @@
 from torch_snippets.registry import *
 from torch_snippets.markup import *
 
-c = Config().from_disk('config.ini')
+import os
+c = Config().from_disk(os.environ['CONFIG'])
 c = AttrDict(c)
 
 content = {
@@ -19,6 +20,7 @@ content = {
     'batch_size': c.training.scheme.batch_size
 }
 
-print(content)
+from torch_snippets.markup import pretty_json
+pretty_json(content)
 
-write_yaml(content, 'config.yml')
+write_yaml(content, 'auto_train_classification/config.yml')
