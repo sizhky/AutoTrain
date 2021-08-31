@@ -1,7 +1,7 @@
-from torch_snippets import sys, P, find, plt, logger, parent
+from torch_snippets import sys, P
 sys.path.append(str(P().resolve()))
-from auto_train_object_detection.model import learn, config, model
-
+from auto_train_segmentation.model import learn, config, model
+from torch_snippets import makedir, parent, logger, plt
 import typer
 app = typer.Typer()
 
@@ -18,11 +18,12 @@ def find_best_learning_rate():
     ax.set_ylabel("Loss")
     ax.set_xlabel("Learning Rate")
     ax.set_xscale('log')
+    makedir(config.project.location)
     fig.savefig(f'{config.project.location}/find_lr_plot.png')
     logger.info(f'LR Plot is saved at {config.project.location}/find_lr_plot.png')
     logger.info(f'Suggested LRs: {suggested_lrs.lr_min} and {suggested_lrs.lr_steep}')
     return max(suggested_lrs.lr_min, suggested_lrs.lr_steep)
-    
+
 @app.command()
 def train_model(lr:float=None):
     from torch_snippets import load_torch_model_weights_to, save_torch_model_weights_from, makedir

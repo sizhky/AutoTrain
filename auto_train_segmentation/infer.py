@@ -1,27 +1,13 @@
-from torch_snippets import (
-    load_torch_model_weights_to,
-    read, logger, BB,
-    lzip, show, P, choose, sys
-)
-
+from torch_snippets import sys, P
 sys.path.append(str(P().resolve()))
-from auto_train_object_detection.model import (
-    model, config, 
-    Dataset, model_type, parser,
-    tfms, show_preds
-)
+from auto_train_segmentation.model import config, model, tfms, model_type, Dataset, show_preds, parser
+from torch_snippets import load_torch_model_weights_to, logger, read, P, choose
+weights_path = config.training.scheme.output_path
+load_torch_model_weights_to(model, weights_path)
 
-yolo_path = config.training.scheme.output_path
-load_torch_model_weights_to(model, yolo_path, device='cpu')
-
-
-from collections import namedtuple
-infer_tfms = config.testing.preprocess
-Pred = namedtuple('Pred', ['bbs','labels'])
-
-image_extns = ['jpg','jpeg','png']
 def infer(folder):
     fpaths = []
+    image_extns = ['png','jpg','jpeg']
     for extn in image_extns:
         fpaths += P(folder).Glob(f'*.{extn}')
     imgs = [read(f, 1) for f in choose(fpaths, 4)]
@@ -37,17 +23,3 @@ def infer(folder):
     preds = model_type.predict_from_dl(model, infer_dl, keep_images=True)
     show_preds(preds=preds, ncols=3)
     return preds
-
-import typer
-app = typer.Typer()
-
-@app.command()
-def show_predictions_on_folder_of_images(folder):
-    for fpath, pred in predict_on_folder_of_images(folder):
-        try:
-            show(read(fpath, 1), bbs=pred.bbs, texts=pred.labels, fpath=f'/content/outputs/{fpath}')
-        except Exception as e:
-            logger.warning(f'Failed to show prediction on {fpath}\nError {e}')
-
-if __name__ == '__main__':
-    app()
