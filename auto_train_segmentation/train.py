@@ -22,8 +22,8 @@ def find_best_learning_rate():
     fig.savefig(f'{config.project.location}/find_lr_plot.png')
     logger.info(f'LR Plot is saved at {config.project.location}/find_lr_plot.png')
     logger.info(f'Suggested LRs: {suggested_lrs.lr_min} and {suggested_lrs.lr_steep}')
-    return suggested_lrs.lr_min
-    
+    return max(suggested_lrs.lr_min, suggested_lrs.lr_steep)
+
 @app.command()
 def train_model(lr:float=None):
     from torch_snippets import load_torch_model_weights_to, save_torch_model_weights_from, makedir
