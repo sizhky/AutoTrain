@@ -1,13 +1,10 @@
-from auto_train_segmentation.model import config, model, tfms, model_type, Dataset, show_preds, class_map
+from torch_snippets import sys, P
+sys.path.append(str(P().resolve()))
+from auto_train_segmentation.model import config, model, tfms, model_type, Dataset, show_preds, parser
 from torch_snippets import load_torch_model_weights_to, logger, read, P, choose
-yolo_path = config.training.scheme.output_path
-load_torch_model_weights_to(model, yolo_path)
+weights_path = config.training.scheme.output_path
+load_torch_model_weights_to(model, weights_path)
 
-from typer import Typer
-
-app = Typer()
-
-@app.command()
 def infer(folder):
     fpaths = []
     image_extns = ['png','jpg','jpeg']
@@ -21,11 +18,8 @@ def infer(folder):
         tfms.A.Normalize()
     ])
 
-    infer_ds = Dataset.from_images(imgs, infer_tfms, class_map=class_map)
+    infer_ds = Dataset.from_images(imgs, infer_tfms, class_map=parser.class_map)
     infer_dl = model_type.infer_dl(infer_ds, batch_size=1)
     preds = model_type.predict_from_dl(model, infer_dl, keep_images=True)
     show_preds(preds=preds, ncols=3)
     return preds
-
-if __name__ == '__main__':
-    app()
