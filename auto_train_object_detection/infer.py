@@ -1,22 +1,10 @@
-from torch_snippets import *
-from icevision.all import *
-from auto_train_object_detection.custom_functions import *
-from torch_snippets.registry import registry, Config, AttrDict
+from auto_train_object_detection.model import config, Dataset, model_type, class_map
 
-config = Config().from_disk('config.ini')
-config = AttrDict(registry.resolve(config))
-
-image_size = config.architecture.size
-class_map = ClassMap(config.project.classes)
-
-assert config.architecture.model_type.count('.', 1), "Architecture should look like <base>.<model>"
-extra_args = config.architecture.extra_args
-a, b = config.architecture.model_type.split('.')
-model_type = getattr(getattr(models, a), b)
-backbone = getattr(model_type.backbones, config.architecture.backbone)(config.architecture.pretrained)
-model = model_type.model(backbone=backbone(pretrained=True), num_classes=len(class_map), **extra_args)
-
-from torch_snippets import load_torch_model_weights_to, save_torch_model_weights_from, makedir
+from torch_snippets import (
+    load_torch_model_weights_to,
+    model, read, logger, BB,
+    lzip, show, P
+)
 yolo_path = config.training.scheme.output_path
 load_torch_model_weights_to(model, yolo_path, device='cpu')
 
