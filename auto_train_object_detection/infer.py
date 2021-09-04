@@ -1,7 +1,7 @@
 from torch_snippets import (
     sys, choose, resize,
     load_torch_model_weights_to,
-    readPIL, logger, BB,
+    readPIL, logger, BB, detach,
     lzip, show, P, read, PIL, np
 )
 sys.path.append(str(P().resolve()))
@@ -77,12 +77,19 @@ def predict_on_folder_of_images(fpaths,
     preds = []
     for tensor, records in iter(infer_dl):
         x = tensor[0].cuda()
-        output = model.eval()(x)
-        pred = convert_raw_predictions(
-            x, output[0], records,
-            detection_threshold=detection_threshold,
-            nms_iou_threshold=nms_iou_threshold
-        )
+        output = model.cuda().eval()(x)
+        output = detach(output)
+        try:
+            pred = convert_raw_predictions(
+                x, output, records,
+                detection_threshold=detection_threshold,
+            )
+        except:
+            pred = convert_raw_predictions(
+                x, output[0], records,
+                detection_threshold=detection_threshold,
+                nms_iou_threshold=nms_iou_threshold
+            )
         preds.extend(pred)
 
     preds = post_process(preds, images)

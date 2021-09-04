@@ -13,6 +13,14 @@ def get_train_transforms(size, presize):
     ])
     return train_tfms
 
+@registry.augmentations.register("get_train_transforms2")
+def get_train_transforms(size, presize):
+    train_tfms = tfms.A.Adapter([
+        *tfms.A.resize_and_pad(size=(size, size)),
+        tfms.A.Normalize()
+    ])
+    return train_tfms
+
 @registry.augmentations.register("get_val_transforms")
 def get_val_transforms(size, presize):
     valid_tfms = tfms.A.Adapter([
