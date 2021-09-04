@@ -32,6 +32,7 @@ extra_args = config.architecture.extra_args
 assert config.architecture.model_type.count('.', 1), "Architecture should look like <base>.<model>"
 a, b = config.architecture.model_type.split('.')
 model_type = getattr(getattr(models, a), b)
+convert_raw_predictions = getattr(getattr(model_type, 'prediction'), 'convert_raw_predictions')
 backbone = getattr(model_type.backbones, config.architecture.backbone)(config.architecture.pretrained)
 # backbone = model_type.backbones.resnet50_fpn(pretrained=True)
 model = model_type.model(

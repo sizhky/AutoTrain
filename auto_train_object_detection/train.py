@@ -1,4 +1,5 @@
-from torch_snippets.paths import find
+from torch_snippets import parent, sys, P
+sys.path.append(str(P().resolve()))
 from auto_train_object_detection.model import learn, config, model
 from torch_snippets import plt, logger, parent
 
