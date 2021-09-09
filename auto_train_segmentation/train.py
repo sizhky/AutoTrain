@@ -35,7 +35,9 @@ def train_model(lr:float=None):
     training_scheme = config.training.scheme
 
     lr = lr if lr is not None else find_best_learning_rate()
+    logger.info(f"Using learning Rate: {lr}")
     with learn.no_bar():
+        print(["Epoch, Train-Loss, Validation-Loss, Validation-MAP, Time"])
         learn.fine_tune(
             training_scheme.epochs, 
             lr, 

@@ -13,13 +13,10 @@ def infer(folder):
     imgs = [read(f, 1) for f in choose(fpaths, 4)]
     logger.info(f'Found {len(imgs)} images')
 
-    infer_tfms = tfms.A.Adapter([
-        *tfms.A.resize_and_pad(size=512),
-        tfms.A.Normalize()
-    ])
+    infer_tfms = config.testing.preprocess
 
     infer_ds = Dataset.from_images(imgs, infer_tfms, class_map=parser.class_map)
     infer_dl = model_type.infer_dl(infer_ds, batch_size=1)
     preds = model_type.predict_from_dl(model, infer_dl, keep_images=True)
-    show_preds(preds=preds, ncols=3)
+    show_preds(preds=preds)
     return preds

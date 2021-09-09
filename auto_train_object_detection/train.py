@@ -1,4 +1,5 @@
-from torch_snippets.paths import find
+from torch_snippets import P, sys
+sys.path.append(str(P().resolve()))
 from auto_train_object_detection.model import learn, config, model
 from torch_snippets import plt, logger, parent
 
@@ -20,7 +21,7 @@ def find_best_learning_rate():
     fig.savefig(f'{config.project.location}/find_lr_plot.png')
     logger.info(f'LR Plot is saved at {config.project.location}/find_lr_plot.png')
     logger.info(f'Suggested LRs: {suggested_lrs.lr_min} and {suggested_lrs.lr_steep}')
-    return suggested_lrs.lr_min
+    return max(suggested_lrs.lr_min, suggested_lrs.lr_steep)
     
 @app.command()
 def train_model(lr:float=None):
@@ -33,7 +34,9 @@ def train_model(lr:float=None):
     training_scheme = config.training.scheme
 
     lr = lr if lr is not None else find_best_learning_rate()
+    logger.info(f"Using learning Rate: {lr}")
     with learn.no_bar():
+        print(["Epoch, Train-Loss, Validation-Loss, Validation-MAP, Time"])
         learn.fine_tune(
             training_scheme.epochs, 
             lr, 

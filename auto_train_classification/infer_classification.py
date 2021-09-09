@@ -38,7 +38,7 @@ class ImageClassifier(object):
             settings.project.num_classes
         )
         self.model = self.model.to(device)
-        folder = Glob(settings.training.scheme.output)[0]
+        folder = sorted(Glob(settings.training.scheme.output))[-1]
         print(folder)
         self.load(folder/'model_best.pth.tar')
 
@@ -61,6 +61,7 @@ class ImageClassifier(object):
             'path': image_paths,
             'image_id': [fname(f) for f in image_paths]
         })
+        print(preds.to_markdown())
         return preds
 
 import typer
@@ -71,6 +72,7 @@ app = typer.Typer()
 def predict(folder:P):
     model = ImageClassifier()
     files = [str(f) for f in folder.glob('*.jpg')]
+    logger.info(f'Predicting on {len(files)} files...')
     return model.predict(files)
 
 if __name__ == '__main__':

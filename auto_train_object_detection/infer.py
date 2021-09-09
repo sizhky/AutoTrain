@@ -1,39 +1,43 @@
-from auto_train_object_detection.model import config, Dataset, model_type, class_map
-
 from torch_snippets import (
+    sys,
     load_torch_model_weights_to,
-    model, read, logger, BB,
-    lzip, show, P
+    read, logger, BB,
+    lzip, show, P, choose
 )
+sys.path.append(str(P().resolve()))
+from auto_train_object_detection.model import config, Dataset, model_type, class_map, model, show_preds
+
 yolo_path = config.training.scheme.output_path
 load_torch_model_weights_to(model, yolo_path, device='cpu')
 
 
 from collections import namedtuple
 infer_tfms = config.testing.preprocess
-print(infer_tfms)
 Pred = namedtuple('Pred', ['bbs','labels'])
+
+def preds2bboxes(preds):
+    bboxes = [pred.pred.detection.bboxes for pred in preds]
+    bboxes = [[(bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax) for bbox in bboxlist] for bboxlist in bboxes]
+    bboxes = [[BB(int(x), int(y), int(X), int(Y)) for (x,y,X,Y) in bboxlist] for bboxlist in bboxes]
+    return bboxes
+
 
 image_extns = ['jpg','jpeg','png']
 def predict_on_folder_of_images(folder):
     fpaths = []
     for extn in image_extns:
         fpaths += P(folder).Glob(f'*.{extn}')
-    imgs = [read(f, 1) for f in fpaths][:2]
+    fpaths = choose(fpaths, 2)
+    imgs = [read(f, 1) for f in fpaths]
     logger.info(f'Found {len(imgs)} images')
     infer_ds = Dataset.from_images(imgs, infer_tfms, class_map=class_map)
 
     infer_dl = model_type.infer_dl(infer_ds, batch_size=1)
     preds = model_type.predict_from_dl(model=model, infer_dl=infer_dl, keep_images=True)
 
-    bboxes = [pred.pred.detection.bboxes for pred in preds]
-    bboxes = [[(bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax) for bbox in bboxlist] for bboxlist in bboxes]
-    bboxes = [[BB(int(x), int(y), int(X), int(Y)) for (x,y,X,Y) in bboxlist] for bboxlist in bboxes]
-    shapes = [im.shape for im in imgs]
-    pads = [((max(W, H) - min(W, H)) // 2) for H,W,_ in shapes]
-    ws = [sh[1] for sh in shapes]
-    bboxes = [[bb.remap((384,384), (ws[ix], ws[ix])) for bb in bblist] for ix, bblist in enumerate(bboxes)]
-    bboxes = [[BB(x,y-pads[ix],X,Y-pads[ix]) for (x,y,X,Y) in bbs] for ix,bbs in enumerate(bboxes)]
+    bboxes = preds2bboxes(preds)
+    sz = config.architecture.size
+    bboxes = [[BB(x/sz,y/sz,X/sz,Y/sz) for x,y,X,Y in bbs] for img, bbs in zip(imgs, bboxes)]
 
     labels = [pred.pred.detection.labels for pred in preds]
     preds = lzip(bboxes, labels)
