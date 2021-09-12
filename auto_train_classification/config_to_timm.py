@@ -20,7 +20,7 @@ content = {
 }
 
 if c.training.scheme.initial_checkpoint:
-    content['initial_checkpoint'] =  c.training.scheme.initial_checkpoint,
+    content['initial_checkpoint'] =  c.training.scheme.initial_checkpoint
 
 from torch_snippets.markup import pretty_json
 pretty_json(content)
