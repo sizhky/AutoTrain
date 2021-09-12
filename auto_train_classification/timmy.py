@@ -24,13 +24,16 @@ def create_timm_body(arch:str, pretrained=True, cut=None, n_in=3):
 
 # Cell
 def create_timm_model(arch:str, n_out, cut=None, pretrained=True, n_in=3, init=nn.init.kaiming_normal_, custom_head=None,
-                     concat_pool=True, **kwargs):
+                     concat_pool=False, **kwargs):
     "Create custom architecture using `arch`, `n_in` and `n_out` from the `timm` library"
     body = create_timm_body(arch, pretrained, None, n_in)
     if custom_head is None:
         nf = num_features_model(nn.Sequential(*body.children()))
         head = create_head(nf, n_out, concat_pool=concat_pool, **kwargs)
-    else: head = custom_head
+    else:
+        pool = AdaptiveConcatPool2d() if concat_pool else nn.AdaptiveAvgPool2d(1)
+        layers = [pool, Flatten()]
+        head = nn.Sequential(*layers, custom_head)
     model = nn.Sequential(body, head)
     if init is not None: apply_init(model[1], init)
     return model
