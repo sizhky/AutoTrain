@@ -3,7 +3,7 @@ amp: true
 batch_size: 2
 cutmix: 0.5
 data_dir: horses_vs_zebras/data/
-epochs: 2
+epochs: 20
 initial_checkpoint: horses_vs_zebras/models/model.pt
 mixup: 0.5
 mixup_switch_prob: 0.30000000000000004

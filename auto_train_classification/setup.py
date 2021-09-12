@@ -7,6 +7,10 @@ app = typer.Typer()
 
 bash_file = '''
 git clone https://github.com/rwightman/pytorch-image-models timm
+cd timm
+git checkout 54e90e8
+git reset --hard
+cd ..
 export BASE_DATA_DIR=BASE_DATA_DIRECTORY
 export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=True
 

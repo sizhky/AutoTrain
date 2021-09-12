@@ -8,7 +8,8 @@ app = typer.Typer()
 
 @app.command()
 def find_best_learning_rate():
-    suggested_lrs = learn.lr_find(show_plot=False)
+    with learn.no_bar():
+        suggested_lrs = learn.lr_find(show_plot=False)
     recorder = learn.recorder
     skip_end = 5
     lrs    = recorder.lrs    if skip_end==0 else recorder.lrs   [:-skip_end]
