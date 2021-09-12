@@ -16,9 +16,11 @@ content = {
     'amp': c.training.scheme.amp,
     'aa': c.training.scheme.aa,
     'output': c.training.scheme.output,
-    'initial_checkpoint': c.training.scheme.initial_checkpoint,
     'batch_size': c.training.scheme.batch_size
 }
+
+if c.training.scheme.initial_checkpoint:
+    content['initial_checkpoint'] =  c.training.scheme.initial_checkpoint,
 
 from torch_snippets.markup import pretty_json
 pretty_json(content)
