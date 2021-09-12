@@ -38,20 +38,3 @@ model = create_timm_model(
     n_out=config.project.num_classes)
     
 learn = Learner(dls, model, splitter=default_split, metrics=[accuracy])
-
-def get_dataloader(
-    source,
-    output,
-    bs=64,
-    item_tfms=[RandomResizedCrop(size=128, min_scale=0.35), FlipItem(0.5)],
-    batch_tfms=RandomErasing(p=0.9, max_count=3)
-):
-    dblock = DataBlock(
-        blocks=(ImageBlock, CategoryBlock),
-        get_items=get_image_files,
-        get_y=parent_label,
-        item_tfms=item_tfms,
-        batch_tfms=batch_tfms
-    )
-
-    return dblock.dataloaders(source=source, path=output, bs=bs, num_workers=8)
