@@ -18,14 +18,16 @@ def get_dataloaders(
 ):
     dblock = DataBlock(
         blocks=(ImageBlock, CategoryBlock),
-        splitter=GrandparentSplitter(valid_name='val'),
+        splitter=GrandparentSplitter(
+            train_name=stem(config.training.data.train_dir),
+            valid_name=stem(config.training.data.validation_dir)),
         get_items=get_image_files,
         get_y=parent_label,
         item_tfms=item_tfms,
         batch_tfms=batch_tfms
     )
-
-    return dblock.dataloaders(source=source, path=output, bs=bs, num_workers=8)
+    dls = dblock.dataloaders(source=source, path=output, bs=bs, num_workers=8)
+    return dls
 
 dls = get_dataloaders(
     source=config.training.dir,
