@@ -1,5 +1,24 @@
 # Step by step instrcutions
 
+## Train via fastai
+### 0. Inital Setup
+1. Just create the cofig file as shown in configs/classification_imagenette.ini
+2. Create the environment variable `$ export CONFIG=configs/classification_imagenette.ini`
+3. Run `$ python auto_train_classification/train.py` for training
+4. Run
+```python
+from auto_train_classification.infer import infer
+p1 = infer('/path/to/folder/of/images/')
+print(p1)
+''' Output would look like this --> 
+(» horses_vs_zebras/data/test/B/n02391049_1060.jpg, 'B', tensor(0.9194)),
+(» horses_vs_zebras/data/test/B/n02391049_2870.jpg, 'B', tensor(0.5616)),
+(» horses_vs_zebras/data/test/B/n02391049_2890.jpg, 'B', tensor(0.5312)),
+(» horses_vs_zebras/data/test/B/n02391049_1150.jpg, 'B', tensor(0.9354))]
+'''
+```
+
+## Train via TIMM
 ### 0. Initial Setup
 
 1. install requirements
