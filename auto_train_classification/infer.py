@@ -1,7 +1,7 @@
 from torch_snippets import sys, P
 sys.path.append(str(P().resolve()))
 from auto_train_classification.model import config, learn, model
-from torch_snippets import load_torch_model_weights_to, logger, read, P, choose
+from torch_snippets import load_torch_model_weights_to, logger, read, P, choose, show
 weights_path = config.training.scheme.output_path
 load_torch_model_weights_to(model, weights_path)
 
@@ -16,5 +16,6 @@ def infer(folder):
     for f in fpaths:
         pred, _, cnf = learn.predict(f)
         conf = max(cnf)
+        show(read(f, 1), title=f'{pred} @ {conf*100:.1f}%')
         output.append((f, pred, conf))
     return output
