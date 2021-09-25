@@ -1,8 +1,7 @@
 from torch_snippets import *
 from torch_snippets.registry import Config, AttrDict, registry
-import sys; sys.path.append(str(P().resolve()))
-from auto_train_classification.custom_functions import *
-from auto_train_classification.timmy import create_timm_model
+from auto_train.classification.custom_functions import *
+from auto_train.classification.timmy import create_timm_model
 
 config = Config().from_disk(os.environ['CONFIG'])
 config = AttrDict(registry.resolve(config))

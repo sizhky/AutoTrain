@@ -1,6 +1,5 @@
 from torch_snippets import sys, P
-sys.path.append(str(P().resolve()))
-from auto_train_classification.model import learn, config, model
+from .model import learn, config, model
 from torch_snippets import makedir, parent, logger, plt
 import typer
 
