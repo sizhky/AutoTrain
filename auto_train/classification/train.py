@@ -3,6 +3,7 @@ sys.path.append(str(P().resolve()))
 from auto_train_classification.model import learn, config, model
 from torch_snippets import makedir, parent, logger, plt
 import typer
+
 app = typer.Typer()
 
 def find_best_learning_rate():
