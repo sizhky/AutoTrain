@@ -1,5 +1,5 @@
 from torch_snippets import sys, P
-from .model import learn, config, model
+from auto_train.classification.model import learn, config, model
 from torch_snippets import makedir, parent, logger, plt
 import typer
 

@@ -1,15 +1,14 @@
-from common.base import Task
-from torch_snippets.registry import AttrDict, registry
-from classification.custom_functions import *
+from fastapi import APIRouter
+import os; os.environ['CONFIG'] = 'configs/classification_imagenette.ini'
 
-class Classification(Task):
-    def __init__(self, config):
-        super().__init__(config)
+router = APIRouter()
 
-    def train(self):
-        self.config = AttrDict(registry.resolve(self.config))
-        print(self.config)
+@router.post('/train/')
+async def train():
+    from auto_train.classification.train import train_model
+    train_model()
 
-def train_model(config):
-    task = Classification(config)
-    task.train()
+@router.post('/validate/')
+async def validate():
+    from auto_train.classification.infer import infer
+    return infer()
