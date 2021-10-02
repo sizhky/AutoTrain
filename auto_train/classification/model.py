@@ -1,11 +1,12 @@
 from torch_snippets import stem, logger, os, unzip_file, P
 from torch_snippets.registry import Config, AttrDict, registry
 from fastai.vision.all import *
-
+import torch_snippets
 from auto_train.classification.custom_functions import *
 from auto_train.classification.timmy import create_timm_model
 
 from auto_train.common import Task
+
 
 class ClassificationModel(Task):
     def __init__(self, train_id, config=None):
@@ -50,16 +51,16 @@ class ClassificationModel(Task):
             batch_tfms=batch_tfms
         )
         dls = dblock.dataloaders(
-            source=source, path=output, 
+            source=source, path=output,
             bs=bs, num_workers=8
         )
         return dls
-    
+
     def download_data(self):
         from fastdownload import FastDownload
         source = self.config.project.data_source_url
         d = FastDownload(
-                base=P(x.config.training.dir).parent,
-                data='./',
-                module=torch_snippets)
+            base=P(self.config.training.dir).parent,
+            data='./',
+            module=torch_snippets)
         d.get(source)

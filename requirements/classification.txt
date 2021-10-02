@@ -1,7 +1,5 @@
 torch_snippets
 torch
-label-studio
-label-studio-ml
-rich
+typer
 fastapi
 uvicorn
