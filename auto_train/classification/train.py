@@ -1,11 +1,13 @@
 from torch_snippets import sys, P
-from auto_train.classification.model import learn, config, model
+from auto_train.classification.model import ClassificationModel
 from torch_snippets import makedir, parent, logger, plt
 import typer
 
 app = typer.Typer()
 
-def find_best_learning_rate():
+def find_best_learning_rate(task):
+    learn = task.learn
+    config = task.config
     with learn.no_bar():
         suggested_lrs = learn.lr_find(show_plot=False)
     recorder = learn.recorder
@@ -28,15 +30,24 @@ def find_best_learning_rate():
 
 @app.command()
 def train_model(lr:float=None):
-    from torch_snippets import load_torch_model_weights_to, save_torch_model_weights_from, makedir
+    from torch_snippets import (
+        load_torch_model_weights_to,
+        save_torch_model_weights_from,
+        makedir)
+
+    train_id = '1'
+    task = ClassificationModel(train_id)
+    learn = task.learn
+    model = task.model
+    config = task.config
+    training_scheme = config.training.scheme
+
     try:
         load_torch_model_weights_to(model, config.training.scheme.resume_training_from)
     except:
         logger.info('Training from scratch!')
-        
-    training_scheme = config.training.scheme
 
-    lr = lr if lr is not None else find_best_learning_rate()
+    lr = lr if lr is not None else find_best_learning_rate(learn)
     logger.info(f"Using lr: {lr}")
     with learn.no_bar():
         print(["Epoch, Train Loss, Validation Loss, Validation Accuracy, Time"])
