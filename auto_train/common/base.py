@@ -1,4 +1,4 @@
-import os
+from torch_snippets import P, os
 from torch_snippets.registry import Config, AttrDict, registry
 
 class Task:
@@ -13,3 +13,13 @@ class Task:
 
     def parse_config(self):
        self.config = AttrDict(registry.resolve(self.config))
+
+    def download_data(self):
+        import torch_snippets
+        from fastdownload import FastDownload
+        source = self.config.project.data_source_url
+        d = FastDownload(
+            base=P(self.config.training.dir).parent,
+            data='./',
+            module=torch_snippets)
+        d.get(source)

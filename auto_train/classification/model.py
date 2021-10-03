@@ -7,25 +7,23 @@ from auto_train.classification.timmy import create_timm_model
 
 from auto_train.common import Task
 
-
 class ClassificationModel(Task):
-    def __init__(self, train_id, config=None):
+    def __init__(self, config, inference_only=True):
         super().__init__(config)
         config = self.config
 
-        logger.add(f'{train_id}.txt')
-
-        self.dls = self.get_dataloaders(
-            source=config.training.dir,
-            output=config.training.scheme.output)
         self.model = create_timm_model(
             config.architecture.backbone.model,
             custom_head=config.architecture.head,
             n_out=config.project.num_classes)
-        self.learn = Learner(
-            self.dls, self.model,
-            splitter=default_split,
-            metrics=[accuracy])
+        if inference_only:
+            self.dls = self.get_dataloaders(
+                source=config.training.dir,
+                output=config.training.scheme.output)
+            self.learn = Learner(
+                self.dls, self.model,
+                splitter=default_split,
+                metrics=[accuracy])
 
     def get_dataloaders(
         self, source, output, bs=64,
@@ -36,7 +34,6 @@ class ClassificationModel(Task):
     ):
         training_dir = str(P(self.config.training.dir).resolve())
         if not os.path.exists(training_dir):
-
             print(f'downloading data to {training_dir}...')
             self.download_data()
 
@@ -56,11 +53,3 @@ class ClassificationModel(Task):
         )
         return dls
 
-    def download_data(self):
-        from fastdownload import FastDownload
-        source = self.config.project.data_source_url
-        d = FastDownload(
-            base=P(self.config.training.dir).parent,
-            data='./',
-            module=torch_snippets)
-        d.get(source)

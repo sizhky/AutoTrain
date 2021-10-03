@@ -1,15 +1,11 @@
-from icevision.all import *
-from torch_snippets import Glob, parent, P, sys
-sys.path.append(str(P().resolve()))
-from auto_train_segmentation.preprocess import *
+from torch_snippets import stem, logger, os, unzip_file, P
+from torch_snippets.registry import Config, AttrDict, registry
 from torch_snippets.markup import read_json, write_json
-from torch_snippets.registry import Config, registry, AttrDict
-
-config = Config().from_disk(os.environ['CONFIG'])
-config = AttrDict(registry.resolve(config))
-
-from torch_snippets import *
+from fastai.vision.all import *
 from icevision.all import *
+
+from auto_train.common import Task
+from auto_train.segmentation.preprocess import *
 
 def incby1(d):
     for k,v in d.items():
@@ -20,43 +16,66 @@ def incby1(d):
         if isinstance(v, dict):
             incby1(v)
 
-x = read_json(config.training.annotations_file)
-# ids start from 0, but it's better to number them from 1
-incby1(x)
-write_json(x, '/tmp/intermediate-file.json')
+class SegmentationModel(Task):
+    def __init__(self, config, inference_only=False):
+        super().__init__(config)
+        config = self.config
 
-parser = parsers.COCOMaskParser(
-    '/tmp/intermediate-file.json', 
-    config.training.images_dir
-)
+        self.create_parser()
+        self.model = self.create_model()
 
-data_splitter = RandomSplitter((config.training.train_ratio, 1 - config.training.train_ratio))
-logger.info(f'\nCLASSES INFERRED FROM {config.training.annotations_file}: {parser.class_map}')
-train_records, valid_records = parser.parse(data_splitter)
+        if not inference_only:
+            self.dls = self.get_dataloaders()
+            self.learn = self.model_type.fastai.learner(
+                dls=self.dls, 
+                model=self.model, 
+                metrics=[COCOMetric(metric_type=COCOMetricType.bbox)])
 
-presize = config.architecture.presize
-size = config.architecture.size
+    def create_parser(self):
+        config = self.config
+        training_dir = str(P(config.training.dir).resolve())
+        if not os.path.exists(training_dir):
+            print(f'downloading data to {training_dir}...')
+            self.download_data()
 
-train_tfms = config.training.preprocess
-valid_tfms = config.testing.preprocess
+        x = read_json(config.training.annotations_file)
+        # ids start from 0, but it's better to number them from 1
+        # incby1(x)
+        write_json(x, '/tmp/intermediate-file.json')
 
-train_ds = Dataset(train_records, train_tfms)
-valid_ds = Dataset(valid_records, valid_tfms)
+        self.parser = parsers.COCOMaskParser(
+            '/tmp/intermediate-file.json', 
+            config.training.images_dir
+        )
+        logger.info(f'\nCLASSES INFERRED FROM {config.training.annotations_file}: {self.parser.class_map}')
 
-extra_args = config.architecture.extra_args
-assert config.architecture.model_type.count('.', 1), "Architecture should look like <base>.<model>"
-a, b = config.architecture.model_type.split('.')
-model_type = getattr(getattr(models, a), b)
-backbone = getattr(model_type.backbones, config.architecture.backbone)(config.architecture.pretrained)
-model = model_type.model(
-    backbone=backbone(pretrained=True), 
-    num_classes=len(parser.class_map),
-    **extra_args
-)
+    def get_dataloaders(self):
+        config = self.config
+        data_splitter = RandomSplitter((config.training.train_ratio, 1 - config.training.train_ratio))
+        train_records, valid_records = self.parser.parse(data_splitter)
 
-train_dl = model_type.train_dl(train_ds, batch_size=4, num_workers=4, shuffle=True)
-valid_dl = model_type.valid_dl(valid_ds, batch_size=4, num_workers=4, shuffle=False)
-# model_type.show_batch(first(valid_dl), ncols=4)
+        train_tfms = config.training.preprocess
+        valid_tfms = config.testing.preprocess
 
-metrics = [COCOMetric(metric_type=COCOMetricType.bbox)]
-learn = model_type.fastai.learner(dls=[train_dl, valid_dl], model=model, metrics=metrics)
+        train_ds = Dataset(train_records, train_tfms)
+        valid_ds = Dataset(valid_records, valid_tfms)
+        train_dl = self.model_type.train_dl(train_ds, batch_size=2, num_workers=2, shuffle=True)
+        valid_dl = self.model_type.valid_dl(valid_ds, batch_size=2, num_workers=2, shuffle=False)
+        return train_dl, valid_dl
+
+    def create_model(self):
+        config = self.config
+        extra_args = config.architecture.extra_args.to_dict()
+        assert config.architecture.model_type.count('.', 1), "Architecture should look like <base>.<model>"
+        a, b = config.architecture.model_type.split('.')
+        self.model_type = getattr(getattr(models, a), b)
+        backbone = getattr(
+                self.model_type.backbones, 
+                config.architecture.backbone)(config.architecture.pretrained)
+        model = self.model_type.model(
+            backbone=backbone(pretrained=True), 
+            num_classes=len(self.parser.class_map),
+            **extra_args
+        )
+        return model
+

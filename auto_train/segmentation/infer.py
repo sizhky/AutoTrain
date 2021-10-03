@@ -1,16 +1,18 @@
-from torch_snippets import sys, P
-sys.path.append(str(P().resolve()))
-from auto_train_segmentation.model import config, model, tfms, model_type, Dataset, show_preds, parser
+from icevision.all import Dataset
 from torch_snippets import load_torch_model_weights_to, logger, read, P, choose
+
+from auto_train.segmentation.model import SegmentationModel
+
+task = SegmentationModel(config='configs/segmentation.ini', inference_only=True)
+config, model = task.config, task.model
+model_type, parser = task.model_type, task.parser
+
 weights_path = config.training.scheme.output_path
 load_torch_model_weights_to(model, weights_path)
 
-def infer(folder):
-    fpaths = []
-    image_extns = ['png','jpg','jpeg']
-    for extn in image_extns:
-        fpaths += P(folder).Glob(f'*.{extn}')
-    imgs = [read(f, 1) for f in choose(fpaths, 4)]
+def infer(fpath):
+    fpaths = [fpath]
+    imgs = [read(f, 1) for f in fpaths]
     logger.info(f'Found {len(imgs)} images')
 
     infer_tfms = config.testing.preprocess
@@ -18,5 +20,5 @@ def infer(folder):
     infer_ds = Dataset.from_images(imgs, infer_tfms, class_map=parser.class_map)
     infer_dl = model_type.infer_dl(infer_ds, batch_size=1)
     preds = model_type.predict_from_dl(model, infer_dl, keep_images=True)
-    show_preds(preds=preds)
+    # show_preds(preds=preds)
     return preds

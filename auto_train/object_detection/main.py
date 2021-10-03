@@ -1,3 +1,4 @@
+from torch_snippets import rand
 from fastapi import APIRouter, File, UploadFile, BackgroundTasks
 from io import BytesIO
 from PIL import Image
@@ -8,15 +9,16 @@ router = APIRouter()
 
 @router.post('/train/')
 async def train(background_tasks: BackgroundTasks):
-    from auto_train.classification.train import train_model
-    # background_tasks.add_task(train_model, 'configs/classification_imagenette.ini')
+    from auto_train.object_detection.train import train_model
+    # background_tasks.add_task(train_model, 'configs/object_detection.ini')
     return {
         'message': 'Model training has started',
     }
 
+
 @router.post('/validate/')
 async def validate(img: UploadFile = File(...)):
-    from auto_train.classification.infer import infer
+    from auto_train.object_detection.infer import infer
     image = Image.open(BytesIO(img.file.read()))
     logger.info(img.filename)
     img_path = f'test_images/{img.filename}'
