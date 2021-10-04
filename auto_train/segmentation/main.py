@@ -1,7 +1,7 @@
-from torch_snippets import rand
+from torch_snippets import rand, PIL, np, Image
 from fastapi import APIRouter, File, UploadFile, BackgroundTasks
+from fastapi.responses import StreamingResponse
 from io import BytesIO
-from PIL import Image
 import os
 from loguru import logger
 
@@ -23,4 +23,10 @@ async def validate(img: UploadFile = File(...)):
     logger.info(img.filename)
     img_path = f'test_images/{img.filename}'
     image.save(img_path)
-    return infer(img_path)
+    masked_image, raw_mask = infer(img_path)
+
+    PIL.Image.fromarray(masked_image.astype(np.uint8)).save('test_images/segmentation.png')
+    def iterfile():  
+        with open('test_images/segmentation.png', mode="rb") as file_like:  
+            yield from file_like
+    return StreamingResponse(iterfile(), media_type='image/png')
