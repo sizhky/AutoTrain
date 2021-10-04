@@ -7,7 +7,7 @@ from torch_snippets.markup import pretty_json
 
 from auto_train.classification.main import router as classification_router
 from auto_train.object_detection.main import router as object_detection_router
-from auto_train.object_detection.main import router as segmentation_router
+from auto_train.segmentation.main import router as segmentation_router
 
 ALLOWED_TASKS = [
     'classification',
