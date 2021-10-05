@@ -1,19 +1,24 @@
+from collections import namedtuple
 from torch_snippets import (
     sys,
     load_torch_model_weights_to,
     read, logger, BB,
     lzip, show, P, choose
 )
-sys.path.append(str(P().resolve()))
-from auto_train_object_detection.model import config, Dataset, model_type, class_map, model, show_preds
+from icevision.all import Dataset
 
-yolo_path = config.training.scheme.output_path
-load_torch_model_weights_to(model, yolo_path, device='cpu')
+from auto_train.object_detection.model import ObjectDetection
 
-
-from collections import namedtuple
-infer_tfms = config.testing.preprocess
 Pred = namedtuple('Pred', ['bbs','labels'])
+
+task = ObjectDetection(config='configs/object_detection.ini', inference_only=True)
+config, model = task.config, task.model
+model_type, class_map = task.model_type, task.class_map
+
+weights_path = config.training.scheme.output_path
+load_torch_model_weights_to(model, weights_path, device='cpu')
+
+infer_tfms = config.testing.preprocess
 
 def preds2bboxes(preds):
     bboxes = [pred.pred.detection.bboxes for pred in preds]
@@ -21,14 +26,9 @@ def preds2bboxes(preds):
     bboxes = [[BB(int(x), int(y), int(X), int(Y)) for (x,y,X,Y) in bboxlist] for bboxlist in bboxes]
     return bboxes
 
-
-image_extns = ['jpg','jpeg','png']
-def predict_on_folder_of_images(folder):
-    fpaths = []
-    for extn in image_extns:
-        fpaths += P(folder).Glob(f'*.{extn}')
-    fpaths = choose(fpaths, 2)
-    imgs = [read(f, 1) for f in fpaths]
+def infer(fpath):
+    logger.info(f'received {fpath} for object detection')
+    imgs = [read(fpath, 1)]
     logger.info(f'Found {len(imgs)} images')
     infer_ds = Dataset.from_images(imgs, infer_tfms, class_map=class_map)
 
@@ -42,19 +42,5 @@ def predict_on_folder_of_images(folder):
     labels = [pred.pred.detection.labels for pred in preds]
     preds = lzip(bboxes, labels)
     preds = [Pred(*pred) for pred in preds]
-    output = lzip(fpaths, preds)
-    return output
+    return preds[0]._asdict()
 
-import typer
-app = typer.Typer()
-
-@app.command()
-def show_predictions_on_folder_of_images(folder):
-    for fpath, pred in predict_on_folder_of_images(folder):
-        try:
-            show(read(fpath, 1), bbs=pred.bbs, texts=pred.labels, fpath=f'/content/outputs/{fpath}')
-        except Exception as e:
-            logger.warning(f'Failed to show prediction on {fpath}\nError {e}')
-
-if __name__ == '__main__':
-    app()

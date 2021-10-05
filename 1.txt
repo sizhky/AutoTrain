@@ -1,0 +1,73 @@
+2021-10-02 11:45:39.880 | INFO     | auto_train.classification.infer:<module>:10 - Loaded weights from imagenette/models/trained-model-v1/model.pth to given model
+2021-10-02 11:45:41.061 | DEBUG    | __main__:infer:31 - 
+[
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\fish.jpg",
+        "prediction": "n01440764",
+        "confidence": "98.74%"
+    },
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\fish.jpg",
+        "prediction": "n01440764",
+        "confidence": "98.74%"
+    }
+]
+2021-10-02 11:49:48.432 | INFO     | auto_train.classification.infer:<module>:10 - Loaded weights from imagenette/models/trained-model-v1/model.pth to given model
+2021-10-02 11:49:48.434 | INFO     | auto_train.classification.infer:infer:44 - None
+2021-10-02 11:49:48.438 | INFO     | auto_train.classification.infer:infer:52 - [» auto_train\classification\images\fish.jpg, » auto_train\classification\images\golf_ball.jpg, » auto_train\classification\images\fish.jpg, » auto_train\classification\images\golf_ball.jpg]
+2021-10-02 11:49:49.798 | DEBUG    | __main__:validate:41 - 
+[
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\fish.jpg",
+        "prediction": "n01440764",
+        "confidence": "98.74%"
+    },
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\golf_ball.jpg",
+        "prediction": "n03445777",
+        "confidence": "99.98%"
+    },
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\fish.jpg",
+        "prediction": "n01440764",
+        "confidence": "98.74%"
+    },
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\golf_ball.jpg",
+        "prediction": "n03445777",
+        "confidence": "99.98%"
+    }
+]
+2021-10-02 11:51:15.099 | INFO     | auto_train.classification.infer:<module>:10 - Loaded weights from imagenette/models/trained-model-v1/model.pth to given model
+2021-10-02 11:51:15.102 | INFO     | auto_train.classification.infer:infer:44 - None
+2021-10-02 11:51:15.105 | INFO     | auto_train.classification.infer:infer:52 - [» auto_train\classification\images\fish.jpg, » auto_train\classification\images\golf_ball.jpg, » auto_train\classification\images\fish.jpg, » auto_train\classification\images\golf_ball.jpg]
+2021-10-02 11:51:16.419 | DEBUG    | __main__:validate:41 - 
+[
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\fish.jpg",
+        "prediction": "tench",
+        "confidence": "98.74%"
+    },
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\golf_ball.jpg",
+        "prediction": "golf ball",
+        "confidence": "99.98%"
+    },
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\fish.jpg",
+        "prediction": "tench",
+        "confidence": "98.74%"
+    },
+    {
+        "file": "D:\\Work\\AutoTrain\\auto_train\\classification\\images\\golf_ball.jpg",
+        "prediction": "golf ball",
+        "confidence": "99.98%"
+    }
+]
+2021-10-02 11:52:11.832 | INFO     | auto_train.classification.infer:<module>:10 - Loaded weights from imagenette/models/trained-model-v1/model.pth to given model
+2021-10-02 11:52:11.834 | INFO     | auto_train.classification.main:validate:32 - golf_ball.jpg
+2021-10-02 11:52:11.973 | INFO     | auto_train.classification.infer:infer:44 - D:\Work\AutoTrain\auto_train\classification/images/golf_ball.jpg
+2021-10-02 11:52:17.140 | INFO     | auto_train.classification.main:validate:32 - fish.jpg
+2021-10-02 11:52:17.163 | INFO     | auto_train.classification.infer:infer:44 - D:\Work\AutoTrain\auto_train\classification/images/fish.jpg
+2021-10-02 11:52:22.279 | INFO     | auto_train.classification.main:validate:32 - golf_ball.jpg
+2021-10-02 11:52:22.422 | INFO     | auto_train.classification.infer:infer:44 - D:\Work\AutoTrain\auto_train\classification/images/golf_ball.jpg
