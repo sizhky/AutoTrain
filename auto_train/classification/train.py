@@ -23,7 +23,10 @@ def train_model(config: P):
     except:
         logger.info('Training from scratch!')
 
-    lr = find_best_learning_rate(task)
+    try:
+        lr = config.training.scheme.learning_rate
+    except:
+        lr = find_best_learning_rate(task)
     logger.info(f"Using learning rate: {lr}")
     learn.fine_tune(
         training_scheme.epochs, 

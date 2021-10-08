@@ -141,7 +141,7 @@ def load_rooftops():
         )
 
         dls = dblock.dataloaders(
-            source=config.training.dir, path='./',
+            source=P(config.training.dir).expanduser(), path='./',
             bs=config.training.scheme.batch_size, num_workers=8
         )
         return dls

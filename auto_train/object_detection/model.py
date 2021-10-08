@@ -57,8 +57,8 @@ class ObjectDetection(Task):
         if not os.path.exists(training_dir):
             self.download_data()
 
-        annotations_file = config.training.annotations_file
-        images_dir = config.training.images_dir
+        annotations_file = P(config.training.annotations_file).expanduser()
+        images_dir = P(config.training.images_dir).expanduser()
         self.parser = parsers.coco(annotations_file=annotations_file, img_dir=images_dir)
         self.class_map = self.parser.class_map
         logger.info(f'\nCLASSES INFERRED FROM {config.training.annotations_file}: {self.parser.class_map}')
