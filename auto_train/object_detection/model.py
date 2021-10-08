@@ -31,8 +31,8 @@ class ObjectDetection(Task):
         train_ds = Dataset(train_records, train_tfms)
         valid_ds = Dataset(valid_records, valid_tfms)
 
-        train_dl = self.model_type.train_dl(train_ds, batch_size=4, num_workers=4, shuffle=True)
-        valid_dl = self.model_type.valid_dl(valid_ds, batch_size=4, num_workers=4, shuffle=False)
+        train_dl = self.model_type.train_dl(train_ds, batch_size=self.config.training.scheme.batch_size, num_workers=4, shuffle=True)
+        valid_dl = self.model_type.valid_dl(valid_ds, batch_size=self.config.training.scheme.batch_size, num_workers=4, shuffle=False)
         return train_dl, valid_dl
 
     def create_model(self):
@@ -53,13 +53,13 @@ class ObjectDetection(Task):
 
     def create_parser(self):
         config = self.config
-        training_dir = str(P(config.training.dir).resolve())
+        training_dir = str(P(config.training.dir).expanduser())
         if not os.path.exists(training_dir):
-            print(f'downloading data to {training_dir}...')
             self.download_data()
-        images_dir = config.training.images_dir
-        annotations_file = config.training.annotations_file
-        self.class_map = ClassMap(config.project.classes)
+
+        annotations_file = P(config.training.annotations_file).expanduser()
+        images_dir = P(config.training.images_dir).expanduser()
         self.parser = parsers.coco(annotations_file=annotations_file, img_dir=images_dir)
+        self.class_map = self.parser.class_map
         logger.info(f'\nCLASSES INFERRED FROM {config.training.annotations_file}: {self.parser.class_map}')
 

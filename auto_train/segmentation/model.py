@@ -33,19 +33,14 @@ class SegmentationModel(Task):
 
     def create_parser(self):
         config = self.config
-        training_dir = str(P(config.training.dir).resolve())
+        training_dir = str(P(config.training.dir).expanduser())
         if not os.path.exists(training_dir):
             print(f'downloading data to {training_dir}...')
             self.download_data()
 
-        x = read_json(config.training.annotations_file)
-        # ids start from 0, but it's better to number them from 1
-        # incby1(x)
-        write_json(x, '/tmp/intermediate-file.json')
-
         self.parser = parsers.COCOMaskParser(
-            '/tmp/intermediate-file.json', 
-            config.training.images_dir
+            P(config.training.annotations_file).expanduser(),
+            P(config.training.images_dir).expanduser(),
         )
         logger.info(f'\nCLASSES INFERRED FROM {config.training.annotations_file}: {self.parser.class_map}')
 
