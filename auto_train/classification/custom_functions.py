@@ -2,8 +2,10 @@ from torch_snippets.registry import registry
 from torchvision import transforms
 from torch import nn
 
-if not hasattr(registry, 'preprocess_function'):
-    registry.create('preprocess_function')
+registry.create('preprocess_function')
+registry.create('load_function')
+registry.create('head')
+registry.create('postprocess_function')
 
 @registry.preprocess_function.register("my_preprocess")
 class Preprocess:
@@ -18,10 +20,7 @@ class Preprocess:
 
     def __call__(self, image):
         return self.image_transforms(image)
-
         
-if not hasattr(registry, 'head'):
-    registry.create('head')
     
 @registry.head.register("custom_head")
 class custom_head(nn.Sequential):
@@ -35,9 +34,7 @@ class custom_head(nn.Sequential):
         
     def forward(self, x):
         return self.model(x)
-    
-if not hasattr(registry, 'postprocess_function'):
-    registry.create('postprocess_function')
+
 
 @registry.postprocess_function.register('convert_imagenette_label_mapping')
 def post_process_function():
@@ -58,6 +55,7 @@ def post_process_function():
         return pred
     return imagenette_label_mapping
 
+
 @registry.postprocess_function.register('convert_rooftop_label_mapping')
 def post_process_function():
     def rooftop_label_mapping(pred):
@@ -71,9 +69,6 @@ def post_process_function():
         return pred
     return rooftop_label_mapping
 
-
-if not hasattr(registry, 'load_function'):
-    registry.create('load_function')
 
 @registry.load_function.register('load_imagenette')
 def load_imagenette():
@@ -110,6 +105,7 @@ def load_imagenette():
         print(len(dls[0]))
         return dls
     return load_data_bunch
+
 
 @registry.load_function.register('load_rooftops')
 def load_rooftops():
