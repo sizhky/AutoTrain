@@ -21,7 +21,7 @@ async def validate(img: UploadFile = File(...)):
     from auto_train.segmentation.infer import infer
     image = Image.open(BytesIO(img.file.read()))
     logger.info(img.filename)
-    img_path = f'test_images/{img.filename}'
+    img_path = f'test_images/from_api/{img.filename}'
     image.save(img_path)
     masked_image, raw_mask = infer(img_path)
 
