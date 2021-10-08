@@ -11,7 +11,7 @@ from auto_train.object_detection.model import ObjectDetection
 
 Pred = namedtuple('Pred', ['bbs','labels'])
 
-task = ObjectDetection(config='configs/object_detection.ini', inference_only=True)
+task = ObjectDetection(config='configs/object_detection_cars.ini', inference_only=True)
 config, model = task.config, task.model
 model_type, class_map = task.model_type, task.class_map
 
