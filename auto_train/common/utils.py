@@ -3,7 +3,8 @@ from torch_snippets import makedir, parent, logger, plt
 def find_best_learning_rate(task):
     learn = task.learn
     config = task.config
-    with learn.no_bar():
+    # with learn.no_bar():
+    if 1:
         suggested_lrs = learn.lr_find(show_plot=False)
     recorder = learn.recorder
     skip_end = 5

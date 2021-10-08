@@ -57,8 +57,24 @@ class ObjectDetection(Task):
         if not os.path.exists(training_dir):
             print(f'downloading data to {training_dir}...')
             self.download_data()
+        if config.meta.incby1:
+            from torch_snippets.markup import read_json, write_json
+            def incby1(d):
+                for k,v in d.items():
+                    if k in ['id', 'image_id', 'category_id']:
+                        d[k] = v+1
+                    if isinstance(v, list):
+                        [incby1(i) for i in v if isinstance(i, dict)]
+                    if isinstance(v, dict):
+                        incby1(v)
+            x = read_json(config.training.annotations_file)
+            # ids start from 0, but it's better to number them from 1
+            incby1(x)
+            write_json(x, '/tmp/intermediate-file.json')
+            annotations_file = '/tmp/intermediate-file.json'
+        else:
+            annotations_file = config.training.annotations_file
         images_dir = config.training.images_dir
-        annotations_file = config.training.annotations_file
         self.class_map = ClassMap(config.project.classes)
         self.parser = parsers.coco(annotations_file=annotations_file, img_dir=images_dir)
         logger.info(f'\nCLASSES INFERRED FROM {config.training.annotations_file}: {self.parser.class_map}')

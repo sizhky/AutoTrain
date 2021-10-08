@@ -1,6 +1,6 @@
 from torch_snippets import rand, PIL, np, Image, show, read
 from fastapi import APIRouter, File, UploadFile, BackgroundTasks
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse
 from io import BytesIO
 import os
 from loguru import logger
@@ -31,7 +31,4 @@ async def validate(img: UploadFile = File(...)):
         save_path='test_images/object_detection.png'
         )
 
-    def iterfile():
-        with open('test_images/object_detection.png', mode="rb") as file_like:  
-            yield from file_like
-    return StreamingResponse(iterfile(), media_type='image/png')
+    return FileResponse('test_images/object_detection.png')
