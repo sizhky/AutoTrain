@@ -31,8 +31,8 @@ class ObjectDetection(Task):
         train_ds = Dataset(train_records, train_tfms)
         valid_ds = Dataset(valid_records, valid_tfms)
 
-        train_dl = self.model_type.train_dl(train_ds, batch_size=4, num_workers=4, shuffle=True)
-        valid_dl = self.model_type.valid_dl(valid_ds, batch_size=4, num_workers=4, shuffle=False)
+        train_dl = self.model_type.train_dl(train_ds, batch_size=self.config.training.scheme.batch_size, num_workers=4, shuffle=True)
+        valid_dl = self.model_type.valid_dl(valid_ds, batch_size=self.config.training.scheme.batch_size, num_workers=4, shuffle=False)
         return train_dl, valid_dl
 
     def create_model(self):
@@ -55,27 +55,12 @@ class ObjectDetection(Task):
         config = self.config
         training_dir = str(P(config.training.dir).resolve())
         if not os.path.exists(training_dir):
-            print(f'downloading data to {training_dir}...')
             self.download_data()
-        if config.meta.incby1:
-            from torch_snippets.markup import read_json, write_json
-            def incby1(d):
-                for k,v in d.items():
-                    if k in ['id', 'image_id', 'category_id']:
-                        d[k] = v+1
-                    if isinstance(v, list):
-                        [incby1(i) for i in v if isinstance(i, dict)]
-                    if isinstance(v, dict):
-                        incby1(v)
-            x = read_json(config.training.annotations_file)
-            # ids start from 0, but it's better to number them from 1
-            incby1(x)
-            write_json(x, '/tmp/intermediate-file.json')
-            annotations_file = '/tmp/intermediate-file.json'
-        else:
-            annotations_file = config.training.annotations_file
+
+        annotations_file = config.training.annotations_file
         images_dir = config.training.images_dir
-        self.class_map = ClassMap(config.project.classes)
+        # self.class_map = ClassMap(config.project.classes)
         self.parser = parsers.coco(annotations_file=annotations_file, img_dir=images_dir)
+        self.class_map = self.parser.class_map
         logger.info(f'\nCLASSES INFERRED FROM {config.training.annotations_file}: {self.parser.class_map}')
 
