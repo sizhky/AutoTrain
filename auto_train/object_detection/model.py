@@ -53,13 +53,12 @@ class ObjectDetection(Task):
 
     def create_parser(self):
         config = self.config
-        training_dir = str(P(config.training.dir).resolve())
+        training_dir = str(P(config.training.dir).expanduser())
         if not os.path.exists(training_dir):
             self.download_data()
 
         annotations_file = config.training.annotations_file
         images_dir = config.training.images_dir
-        # self.class_map = ClassMap(config.project.classes)
         self.parser = parsers.coco(annotations_file=annotations_file, img_dir=images_dir)
         self.class_map = self.parser.class_map
         logger.info(f'\nCLASSES INFERRED FROM {config.training.annotations_file}: {self.parser.class_map}')

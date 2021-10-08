@@ -24,7 +24,7 @@ class ClassificationModel(Task):
                 metrics=[accuracy])
 
     def get_dataloaders(self):
-        training_dir = str(P(self.config.training.dir).resolve())
+        training_dir = str(P(self.config.training.dir).expanduser())
         if not os.path.exists(training_dir):
             print(f'downloading data to {training_dir}...')
             self.download_data()

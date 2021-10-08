@@ -75,9 +75,10 @@ def post_process_function():
 if not hasattr(registry, 'load_function'):
     registry.create('load_function')
 
+@registry.load_function.register('load_imagenette')
 def load_imagenette():
     def load_data_bunch(config):
-        from torch_snippets import stem
+        from torch_snippets import stem, P
         from fastai.vision.all import (
             DataBlock, ImageBlock, CategoryBlock,
             GrandparentSplitter, get_image_files,
@@ -94,16 +95,19 @@ def load_imagenette():
             blocks=(ImageBlock, CategoryBlock),
             splitter=GrandparentSplitter(
                 train_name=stem(config.training.data.train_dir),
-                valid_name=stem(config.training.data.validation_dir)),
+                valid_name=stem(config.training.data.validation_dir)
+            ),
             get_items=get_image_files,
             get_y=parent_label,
             item_tfms=item_tfms,
             batch_tfms=batch_tfms
         )
         dls = dblock.dataloaders(
-            source=config.training.dir, path=config.training.scheme.output,
+            source=P(config.training.dir).expanduser(),
+            path=P(config.training.scheme.output).expanduser(),
             bs=bs, num_workers=8
         )
+        print(len(dls[0]))
         return dls
     return load_data_bunch
 
@@ -124,7 +128,7 @@ def load_rooftops():
             Resize(size=128),
             FlipItem(0.5)]
         batch_tfms=RandomErasing(p=0.9, max_count=3)
-        labels = pd.read_csv(P(config.training.dir)/'labels.csv', header=None)
+        labels = pd.read_csv(P(config.training.dir).expanduser()/'labels.csv', header=None)
         labels.columns = 'fname,class'.split(',')
         labels.set_index('fname', inplace=True)
         labels = labels.to_dict()['class']
