@@ -17,39 +17,18 @@ class ClassificationModel(Task):
             custom_head=config.architecture.head,
             n_out=config.project.num_classes)
         if inference_only:
-            self.dls = self.get_dataloaders(
-                source=config.training.dir,
-                output=config.training.scheme.output)
+            self.dls = self.get_dataloaders()
             self.learn = Learner(
                 self.dls, self.model,
                 splitter=default_split,
                 metrics=[accuracy])
 
-    def get_dataloaders(
-        self, source, output, bs=64,
-        item_tfms=[
-            RandomResizedCrop(size=128, min_scale=0.35),
-            FlipItem(0.5)],
-        batch_tfms=RandomErasing(p=0.9, max_count=3)
-    ):
+    def get_dataloaders(self):
         training_dir = str(P(self.config.training.dir).resolve())
         if not os.path.exists(training_dir):
             print(f'downloading data to {training_dir}...')
             self.download_data()
-
-        dblock = DataBlock(
-            blocks=(ImageBlock, CategoryBlock),
-            splitter=GrandparentSplitter(
-                train_name=stem(self.config.training.data.train_dir),
-                valid_name=stem(self.config.training.data.validation_dir)),
-            get_items=get_image_files,
-            get_y=parent_label,
-            item_tfms=item_tfms,
-            batch_tfms=batch_tfms
-        )
-        dls = dblock.dataloaders(
-            source=source, path=output,
-            bs=bs, num_workers=8
-        )
+        
+        dls = self.config.training.data.load_datablocks(self.config)
         return dls
 
