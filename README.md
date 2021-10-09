@@ -39,15 +39,15 @@ For testing purposes, there is a FastAPI server that can serve your models as AP
 * [Recipes](https://sizhky.github.io/posts/2021/10/auto-train-boiler-plate.html)
 * [Use Cases](https://sizhky.github.io/posts/2021/10/auto-train-use-cases.html)
 
-## Credits
+### Credits
 
-### Classification
+#### Classification
 Uses [fastai](https://github.com/fastai/fastai) and [timm](https://github.com/rwightman/pytorch-image-models) libraries to expose one line functions that can create architectures by using a single string
 
-### Object Detection and Segmentation
+#### Object Detection and Segmentation
 Uses [fastai](https://github.com/fastai/fastai) and [icevision](https://github.com/airctic/icevision) libraries to expose similar functionality
 
-### Other awesome libraries used
+#### Other awesome libraries used
 * [FastAPI](https://github.com/tiangolo/FastAPI)  
 * [Typer](https://github.com/tiangolo/Typer)  
 * [torch-snippets](https://github.com/sizhky/torch_snippets)  
